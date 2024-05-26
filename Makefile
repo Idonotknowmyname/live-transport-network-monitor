@@ -16,3 +16,6 @@ build:
 clean:
 	@ find build ! -name .gitignore -depth 1 | xargs rm -r
 	@ rm -f CMakeUserPresets.json
+
+clean-install:
+	@ conan clean cache  "*" -c
