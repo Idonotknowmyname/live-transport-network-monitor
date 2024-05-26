@@ -7,7 +7,7 @@ project(live-transport-network-monitor CXX)
 # to the CMake module path, where CMake looks for dependencies.
 # list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
 
-find_package(Boost REQUIRED)
+find_package(Boost 1.85 REQUIRED COMPONENTS system)
 
 
 set(SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")

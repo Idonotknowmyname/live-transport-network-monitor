@@ -14,4 +14,5 @@ build:
 	@ cd build && make
 
 clean:
-	@ find build ! -name .gitignore -depth 1 | xargs rm -rf
+	@ find build ! -name .gitignore -depth 1 | xargs rm -r
+	@ rm -f CMakeUserPresets.json
