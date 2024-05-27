@@ -6,25 +6,22 @@
 You will need:
  - CLang or other compiler
  - CMake
- - Ninja
  - Conan >= 2.*
+ - GNU Make
 
 First run conan to generate and collect all dependencies:
 
 ```bash
-cd live-transport-network-monitor
-conan install . --output-folder=build --build=missing
+make install
 ```
 
-Then, you can generate the build and compile with CMake and Ninja:
+Then, you can generate the build and compile with CMake and Makefiles:
 
 ```bash
-mkdir build && cd build
-cmake .. -GNinja -DCMAKE_BUILD_TYPE=Release
-ninja
+make build
 ```
 
 Finally, you can run the executable as:
 ```
-./network-monitor
+./build/network-monitor
 ```

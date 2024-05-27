@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NET_MON_LOGGING
+#define NET_MON_LOGGING
 
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
@@ -8,7 +9,7 @@
 #include <iostream>
 #include <iomanip>
 
-// #define LOG_LEVEL_WIDTH 14
+#define LOG_LEVEL_WIDTH 14
 
 namespace mm {
 
@@ -37,3 +38,5 @@ namespace mm {
         Log(std::cout, args...);
     }
 }
+
+#endif
