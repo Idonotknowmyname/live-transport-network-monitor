@@ -11,6 +11,7 @@ class ConanPackage(ConanFile):
     
     def requirements(self):
         self.requires("boost/1.85.0")
+        self.requires("openssl/3.2.1")
     
     def configure(self):
         self.options["boost/*"].shared = False

@@ -1,6 +1,9 @@
 #include <string>
 #include <boost/beast.hpp>
+#include <boost/beast/ssl.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <openssl/ssl.h>
 
 
 using tcp = boost::asio::ip::tcp;
@@ -26,7 +29,8 @@ public:
         const std::string& url,
         const std::string& endpoint,
         const std::string& port,
-        boost::asio::io_context& ioc
+        boost::asio::io_context& ioc,
+        boost::asio::ssl::context& ctx
     );
 
     /*! \brief Destructor.
@@ -74,7 +78,7 @@ private:
     std::string endpoint{};
     std::string port{};
     tcp::resolver resolver;
-    boost::beast::websocket::stream<boost::beast::tcp_stream> ws;
+    boost::beast::websocket::stream<boost::beast::ssl_stream<boost::beast::tcp_stream>> ws;
     boost::beast::flat_buffer rBuffer {};
     bool is_open {false};
 

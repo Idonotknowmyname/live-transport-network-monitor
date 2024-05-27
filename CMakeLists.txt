@@ -8,20 +8,22 @@ project(live-transport-network-monitor CXX)
 # list(PREPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_BINARY_DIR})
 
 find_package(Boost 1.85 REQUIRED COMPONENTS system unit_test_framework)
+find_package(OpenSSL 3.2.1 REQUIRED)
 
 enable_testing()
 
 add_library(network-monitor STATIC "${CMAKE_CURRENT_SOURCE_DIR}/src/websocket-client.cpp")
-target_compile_features(network-monitor PUBLIC cxx_std_14)
-target_link_libraries(network-monitor PUBLIC boost::boost)
+target_compile_features(network-monitor PUBLIC cxx_std_17)
+target_link_libraries(network-monitor PUBLIC boost::boost openssl::openssl)
 target_include_directories(network-monitor PUBLIC inc)
 
 set(TESTS_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/tests/websocket-client.cpp" "${CMAKE_CURRENT_SOURCE_DIR}/tests/main.cpp")
 
 add_executable(network-monitor-tests ${TESTS_SOURCES})
-target_compile_features(network-monitor-tests PRIVATE cxx_std_14)
-target_link_libraries(network-monitor-tests PRIVATE boost::boost network-monitor)
+target_compile_features(network-monitor-tests PRIVATE cxx_std_17)
+target_link_libraries(network-monitor-tests PRIVATE network-monitor boost::boost openssl::openssl)
 target_include_directories(network-monitor-tests PRIVATE inc)
+target_compile_definitions(network-monitor-tests PRIVATE TESTS_CACERT_PEM="${CMAKE_CURRENT_SOURCE_DIR}/tests/cacert.pem")
 
 add_test(
     NAME network-monitor-tests

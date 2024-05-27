@@ -2,8 +2,11 @@
 #include <network-monitor/logging.h>
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/beast.hpp>
+#include <boost/beast/ssl.hpp>
+#include <openssl/ssl.h>
 
 #include <string>
 #include <iostream>
@@ -18,12 +21,13 @@ WebSocketClient::WebSocketClient(
     const std::string& url,
     const std::string& endpoint,
     const std::string& port,
-    boost::asio::io_context& ioc
+    boost::asio::io_context& ioc,
+    boost::asio::ssl::context& ctx
 ) : url {url},
     endpoint {endpoint},
     port {port},
     resolver {boost::asio::make_strand(ioc)},
-    ws {boost::asio::make_strand(ioc)}
+    ws {boost::asio::make_strand(ioc), ctx}
     {
 }
 
@@ -47,7 +51,8 @@ void WebSocketClient::Connect(
 
         LogInfo("Succeeded in resolving host ", (*resolverIt.begin()).endpoint(), "- attempting to connect...");
 
-        ws.next_layer().async_connect(*resolverIt,
+        // TCP connect
+        ws.next_layer().next_layer().async_connect(*resolverIt,
             [this](auto ec) {
                 OnConnect(ec);
             }
@@ -64,21 +69,32 @@ void WebSocketClient::OnConnect(boost::system::error_code ec) {
     
     LogInfo("Succeeded in connecting to host");
 
-    ws.async_handshake(url, endpoint, [this](auto ec) {
+    // TLS handshake
+    ws.next_layer().async_handshake(boost::asio::ssl::stream_base::handshake_type::client, [this](auto ec) {
         if (ec) {
-            LogInfo("Failed to establish websocket handshake");
+            LogInfo("Failed to establish TLS handshake");
             LogErr(ec);
             return;
         }
-        LogInfo("Succeeded in establishing WS handshake, starting to listen to incoming messages");
-        if (onConnect_) {
-            onConnect_(ec);
-        }
+    
+        // Websockets handshake
+        ws.async_handshake(url, endpoint, [this](auto ec) {
+            if (ec) {
+                LogInfo("Failed to establish websocket handshake");
+                LogErr(ec);
+                return;
+            }
+            LogInfo("Succeeded in establishing WS handshake, starting to listen to incoming messages");
+            if (onConnect_) {
+                onConnect_(ec);
+            }
 
-        is_open = true;
+            is_open = true;
 
-        ListenToIncomingMessages();
+            ListenToIncomingMessages();
+        });
     });
+
 
 }
 
@@ -144,7 +160,7 @@ void WebSocketClient::Close(
         LogInfo("Closing connection");
         is_open = false;
         boost::system::error_code ec;
-        ws.next_layer().socket().close(ec);
+        ws.next_layer().next_layer().socket().close(ec);
         if (onClose) {
             onClose(ec);
         }
